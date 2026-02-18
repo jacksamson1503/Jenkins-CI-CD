@@ -7,8 +7,11 @@ Pushes image to Docker Hub
 Deploys updated container on EC2
 Website updates automatically
 
+
 ARCHITECTURE
 GitHub → Webhook → Jenkins → Docker Build → Docker Hub → EC2 Container → Browser
+
+
 
 CREATED EC2 INSTANCE
 Installed Jenkins
@@ -16,12 +19,16 @@ Installed Docker
 Opened port 8080 (Jenkins)
 Opened port 8081 (Application)
 
+
+
 CREATED GITHUB REPO(Refer in my Repo for code)
 Files should be there:
 index.html
 click.html
 Dockerfile
 Jenkinsfile
+
+
 
 CREATED DOCKERFILE
 FROM nginx:alpine
@@ -32,48 +39,6 @@ Use Nginx image
 Copy HTML files
 Serve website on port 80
 
-Jenkins file:
-pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = "(dockerid)/jack-devops-app"
-    }
-
-    stages {
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-cred',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
-                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
-                }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                sh 'docker push $DOCKER_IMAGE'
-            }
-        }
-
-        stage('Deploy Container') {
-            steps {
-                sh 'docker rm -f jack-container || true'
-                sh 'docker run -d -p 8081:80 --name jack-container $DOCKER_IMAGE'
-            }
-        }
-    }
-}
 
 CREATED JENKINS PIPELINE (Jenkinsfile)
 Stages:
@@ -95,4 +60,6 @@ AND GIVE BUILD NOW
 
 http://(your ec2 ip):8081
 
+JENKINS PIPELINE
+<img width="1843" height="890" alt="jenkins1" src="https://github.com/user-attachments/assets/5f59250c-a6a6-485e-ac1c-20bd4a798f0d" />
 
