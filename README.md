@@ -60,6 +60,21 @@ AND GIVE BUILD NOW
 
 http://(your ec2 ip):8081
 
-JENKINS PIPELINE
+JENKINS PIPELINE:
 <img width="1843" height="890" alt="jenkins1" src="https://github.com/user-attachments/assets/5f59250c-a6a6-485e-ac1c-20bd4a798f0d" />
+
+<img width="1882" height="867" alt="jenkins2" src="https://github.com/user-attachments/assets/1102c2c5-566e-4848-b58d-baa6f6429039" />
+
+DOCKER IMAGES:
+<img width="955" height="167" alt="jenkins 4" src="https://github.com/user-attachments/assets/89cb4430-9d72-4f92-a219-0e8eeaeb5d33" />
+
+DOCKER CONTAINER:
+<img width="1857" height="66" alt="jenkins 5" src="https://github.com/user-attachments/assets/26eaf276-b9f3-428f-af65-1d6333a35360" />
+
+PROJECT OUTPUT:
+<img width="1851" height="978" alt="jenkins 3" src="https://github.com/user-attachments/assets/e9f70d32-43a5-49c2-9354-41152e8a48c1" />
+
+
+
+
 
