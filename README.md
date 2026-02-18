@@ -14,19 +14,19 @@ GitHub → Webhook → Jenkins → Docker Build → Docker Hub → EC2 Container
 
 
 CREATED EC2 INSTANCE
-Installed Jenkins
-Installed Docker
-Opened port 8080 (Jenkins)
-Opened port 8081 (Application)
+Installed Jenkins,
+Installed Docker,
+Opened port 8080 (Jenkins),
+Opened port 8081 (Application).
 
 
 
 CREATED GITHUB REPO(Refer in my Repo for code)
 Files should be there:
-index.html
-click.html
-Dockerfile
-Jenkinsfile
+index.html,
+click.html,
+Dockerfile,
+Jenkinsfile.
 
 
 
