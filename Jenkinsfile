@@ -34,7 +34,7 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 sh 'docker rm -f jack-container || true'
-                sh 'docker run -d -p 8080:80 --name jack-container $DOCKER_IMAGE'
+                sh 'docker run -d -p 8081:80 --name jack-container $DOCKER_IMAGE'
             }
         }
     }
