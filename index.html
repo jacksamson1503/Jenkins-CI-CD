@@ -1,85 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Jack Samson - DevOps Project</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Samson — DevOps Project</title>
+<style>
+  * { box-sizing: border-box; }
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #fafafa;
+    color: #222;
+    line-height: 1.6;
+  }
 
-        h1 {
-            color: #2c3e50;
-        }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 24px 72px;
+  }
 
-        h2 {
-            color: #34495e;
-        }
+  h1 {
+    font-size: 30px;
+    margin: 0 0 4px;
+  }
 
-        h3 {
-            color: #2980b9;
-        }
+  .subtitle {
+    color: #666;
+    margin: 0 0 32px;
+    font-size: 16px;
+  }
 
-        p {
-            font-size: 18px;
-        }
+  p {
+    font-size: 16px;
+    color: #333;
+  }
 
-        ul, ol {
-            text-align: left;
-            display: inline-block;
-            margin-top: 10px;
-        }
+  h3 {
+    font-size: 15px;
+    color: #444;
+    margin: 32px 0 12px;
+    border-bottom: 1px solid #e2e2e2;
+    padding-bottom: 8px;
+  }
 
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #010c12;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
+  ul, ol {
+    padding-left: 20px;
+    margin: 0;
+  }
 
-        a:hover {
-            background-color: #1f6391;
-        }
-    </style>
+  li {
+    margin: 6px 0;
+    font-size: 15px;
+  }
 
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eef8f0;
+    border: 1px solid #cdeed6;
+    color: #1e7a3d;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin: 32px 0;
+  }
+
+  .status .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1e7a3d;
+    flex-shrink: 0;
+  }
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<h1>Jack Samson</h1>
-<h2>DevOps End-to-End Project</h2>
+  <h1>Jack Samson</h1>
+  <p class="subtitle">DevOps End-to-End Project</p>
 
-<p>
-This project demonstrates an end-to-end CI/CD pipeline implementation 
-using AWS console, Jenkins, and Docker.
-</p>
+  <p>
+    This project demonstrates an end-to-end CI/CD pipeline implementation
+    using AWS, Jenkins, and Docker — from source code to a running container
+    in production.
+  </p>
 
-<h3>Technologies Used:</h3>
-<ul>
+  <div class="status">
+    <span class="dot"></span>
+    Deployment successful — built, pushed, and running on AWS EC2.
+  </div>
+
+  <h3>Technologies used</h3>
+  <ul>
     <li>AWS EC2 (Ubuntu)</li>
-    <li>Jenkins (CI/CD Automation)</li>
-    <li>Docker (Containerization)</li>
-    <li>Docker Hub (Image repository)</li>
-</ul>
+    <li>Jenkins (CI/CD automation)</li>
+    <li>Docker (containerization)</li>
+    <li>Docker Hub (image repository)</li>
+  </ul>
 
-<h3>Project Workflow:</h3>
-<ol>
-    <li>Created EC2 instances for Jenkins and Application Server.</li>
-    <li>Configured Jenkins pipeline.</li>
-    <li>Built Docker image.</li>
-    <li>Pushed image to Docker Hub.</li>
-    <li>Deployed container on server.</li>
-</ol>
+  <h3>Project workflow</h3>
+  <ol>
+    <li>Created EC2 instances for Jenkins and the application server</li>
+    <li>Configured the Jenkins pipeline</li>
+    <li>Built the Docker image</li>
+    <li>Pushed the image to Docker Hub</li>
+    <li>Deployed the container on the application server</li>
+  </ol>
 
-<a href="click.html">Click here</a>
-
+</div>
 </body>
 </html>
-
-
