@@ -9,7 +9,7 @@ Website updates automatically
 
 
 ARCHITECTURE
-GitHub → Webhook → Jenkins → Docker Build → Docker Hub → EC2 Container → Browser
+GitHub → Webhook → Jenkins → Docker Build → Docker Hub → EC2 Container → Browser 
 
 
 
