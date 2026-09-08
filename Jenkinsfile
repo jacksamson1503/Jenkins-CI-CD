@@ -1,29 +1,26 @@
 pipeline {
     agent any
-
     environment {
         DOCKER_IMAGE = "jack1503/jack-devops-app"
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('sonarqube') {
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh "${scannerHome}/bin/sonar-scanner -Dsonar.token=${SONAR_TOKEN}"
+                        }
                     }
                 }
             }
         }
-
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -31,13 +28,11 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
-
         stage('Login to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -49,13 +44,11 @@ pipeline {
                 }
             }
         }
-
         stage('Push Image') {
             steps {
                 sh 'docker push $DOCKER_IMAGE'
             }
         }
-
         stage('Deploy Container') {
             steps {
                 sh 'docker rm -f jack-container || true'
