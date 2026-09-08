@@ -4,7 +4,7 @@
 
 This project demonstrates an end-to-end CI/CD pipeline using **GitHub, Jenkins, SonarQube, Docker, Docker Hub, and AWS EC2**.
 
-The main learning objective of this project is **SonarQube integration with Jenkins** for continuous code-quality and security analysis.
+The main learning objective is **SonarQube integration with Jenkins** for continuous code-quality and security analysis.
 
 ## Architecture
 
@@ -21,15 +21,13 @@ Jenkins (AWS EC2)
    |
    +--> Checkout Code
    |
-   +--> SonarQube Code Analysis
+   +--> SonarQube Analysis
    |
    +--> Quality Gate
-   |
-   +--> Docker Build
-   |
-   +--> Docker Hub
-   |
-   +--> Deploy Container on EC2
+   |       |
+   |       +--> PASS -> Docker Build -> Docker Hub -> EC2 Deploy
+   |       |
+   |       +--> FAIL -> Pipeline Stops
    |
    v
 Web Application
@@ -62,34 +60,42 @@ Jenkins-CI-CD/
 
 ## Application
 
-The project contains a simple Java application in `src/Main.java`. This application is included specifically for practicing **SonarQube static code analysis**.
+The project contains a simple Java application in `src/Main.java` specifically for practicing **SonarQube static code analysis**.
 
-The repository also contains a simple HTML web application that is packaged using Docker and served through Nginx.
+The repository also contains an HTML web application packaged using Docker and served through Nginx.
+
+## SonarQube Setup in Jenkins
+
+The Jenkins pipeline expects a Jenkins SonarQube installation named:
+
+```text
+sonarqube
+```
+
+The Jenkins server must also have the SonarScanner CLI available as `sonar-scanner`.
+
+The SonarQube authentication token should be configured securely in Jenkins/SonarQube rather than committed to GitHub.
 
 ## SonarQube Learning Objectives
 
-This project will be used to learn:
+1. Install and configure SonarQube
+2. Create a SonarQube project
+3. Generate a SonarQube authentication token
+4. Configure SonarQube in Jenkins
+5. Install/configure SonarScanner
+6. Run SonarQube analysis from Jenkins
+7. Understand Bugs
+8. Understand Vulnerabilities
+9. Understand Code Smells
+10. Understand Security Hotspots
+11. Understand Duplications
+12. Understand Code Coverage
+13. Understand Reliability, Security, and Maintainability ratings
+14. Configure a Quality Gate
+15. Make Jenkins validate the Quality Gate
+16. Fix issues and run the analysis again
 
-1. SonarQube installation and configuration
-2. Creating a SonarQube project
-3. Generating a SonarQube authentication token
-4. Installing and configuring SonarQube integration in Jenkins
-5. Configuring SonarScanner
-6. Running SonarQube analysis from Jenkins
-7. Understanding Bugs
-8. Understanding Vulnerabilities
-9. Understanding Code Smells
-10. Understanding Security Hotspots
-11. Understanding Duplications
-12. Understanding Code Coverage
-13. Understanding Reliability, Security, and Maintainability ratings
-14. Configuring a Quality Gate
-15. Making Jenkins validate the Quality Gate
-16. Fixing SonarQube issues and running the analysis again
-
-## CI/CD Pipeline Stages
-
-The Jenkins pipeline will contain the following stages:
+## Jenkins Pipeline Stages
 
 ```text
 1. Checkout Code
@@ -97,6 +103,8 @@ The Jenkins pipeline will contain the following stages:
 2. SonarQube Analysis
         |
 3. Quality Gate
+        |
+   PASS only
         |
 4. Build Docker Image
         |
@@ -107,6 +115,8 @@ The Jenkins pipeline will contain the following stages:
 7. Deploy Container
 ```
 
+If the SonarQube Quality Gate fails, the Jenkins pipeline stops before Docker build/push/deployment.
+
 ## Docker
 
 The Dockerfile uses Nginx to serve the HTML application:
@@ -116,6 +126,8 @@ FROM nginx:alpine
 COPY . /usr/share/nginx/html
 EXPOSE 80
 ```
+
+The Java source is included in the repository for SonarQube analysis; the Docker image continues to package the web application with Nginx.
 
 ## Deployment
 
@@ -130,7 +142,7 @@ http://<EC2-PUBLIC-IP>:8081
 ```text
 GitHub
    -> Jenkins Webhook
-   -> Jenkins
+   -> Checkout
    -> SonarQube Analysis
    -> Quality Gate
    -> Docker Build
@@ -143,4 +155,4 @@ GitHub
 
 ## Project Outcome
 
-The final objective is to have an automated pipeline where a GitHub push triggers Jenkins, SonarQube checks the code quality, the Quality Gate determines whether the pipeline can continue, and the approved application is packaged and deployed using Docker on AWS EC2.
+The final objective is an automated pipeline where a GitHub push triggers Jenkins, SonarQube analyzes the source code, the Quality Gate decides whether the pipeline may continue, and only approved builds are packaged and deployed using Docker on AWS EC2.
