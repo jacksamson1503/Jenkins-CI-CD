@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(
             name: 'APP_SERVER',
-            defaultValue: 'ubuntu@YOUR_APP_EC2_IP',
+            defaultValue: 'ubuntu@3.80.166.135',
             description: 'SSH target for the application EC2 server (for example: ubuntu@1.2.3.4)'
         )
     }
