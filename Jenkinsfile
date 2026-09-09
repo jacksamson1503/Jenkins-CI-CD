@@ -1,11 +1,16 @@
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'APP_SERVER',
+            defaultValue: 'ubuntu@YOUR_APP_EC2_IP',
+            description: 'SSH target for the application EC2 server (for example: ubuntu@1.2.3.4)'
+        )
+    }
+
     environment {
-        DOCKER_IMAGE = "jack1503/jack-devops-app"
-        AWS_REGION = "ap-south-1"
-        EKS_CLUSTER = "jenkins-cicd-cluster"
-        K8S_NAMESPACE = "jenkins-cicd"
+        DOCKER_IMAGE = 'jack1503/jack-devops-app'
     }
 
     stages {
@@ -60,24 +65,28 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS') {
+        stage('Deploy to EC2') {
             steps {
-                sh '''
-                    aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
-
-                    kubectl apply -f kubernetes/namespace.yaml
-                    kubectl apply -f kubernetes/deployment.yaml
-                    kubectl apply -f kubernetes/service.yaml
-                    kubectl apply -f kubernetes/hpa.yaml
-
-                    kubectl set image deployment/jenkins-cicd-app \
-                      jenkins-cicd-app=$DOCKER_IMAGE:$BUILD_NUMBER \
-                      -n $K8S_NAMESPACE
-
-                    kubectl rollout status deployment/jenkins-cicd-app \
-                      -n $K8S_NAMESPACE
-                '''
+                sshagent(credentials: ['app-ec2-ssh']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${params.APP_SERVER} '
+                            docker pull ${DOCKER_IMAGE}:${BUILD_NUMBER} &&
+                            (docker stop jenkins-cicd-app || true) &&
+                            (docker rm jenkins-cicd-app || true) &&
+                            docker run -d --name jenkins-cicd-app -p 8081:80 ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                        '
+                    """
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD pipeline completed successfully. Application deployed to EC2.'
+        }
+        failure {
+            echo 'Pipeline failed. Check the failed stage in the Jenkins console output.'
         }
     }
 }
