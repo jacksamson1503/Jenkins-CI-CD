@@ -1,10 +1,10 @@
-# Jenkins CI/CD + SonarQube Project
+# Jenkins CI/CD + SonarQube + Docker + EC2 + Monitoring
 
 ## Project Overview
 
-This project demonstrates an end-to-end CI/CD pipeline using **GitHub, Jenkins, SonarQube, Docker, Docker Hub, and AWS EC2**.
+This project demonstrates an end-to-end CI/CD pipeline using **GitHub, Jenkins, SonarQube, Docker, Docker Hub, and AWS EC2**, with **Prometheus and Grafana** used for monitoring.
 
-The main learning objective is **SonarQube integration with Jenkins** for continuous code-quality and security analysis.
+The main learning objective is to build a practical CI/CD pipeline from source-code change to container deployment, while enforcing code quality with SonarQube and monitoring the deployed application/server.
 
 ## Architecture
 
@@ -30,7 +30,13 @@ Jenkins (AWS EC2)
    |       +--> FAIL -> Pipeline Stops
    |
    v
-Web Application
+Application EC2
+   |
+   +--> Docker Container + Nginx
+   |
+   +--> Prometheus -> Metrics
+   |
+   +--> Grafana -> Dashboards
 ```
 
 ## Technologies Used
@@ -43,6 +49,8 @@ Web Application
 - Docker
 - Docker Hub
 - Nginx
+- Prometheus
+- Grafana
 
 ## Repository Structure
 
@@ -56,7 +64,14 @@ Jenkins-CI-CD/
 +-- Jenkinsfile
 +-- sonar-project.properties
 +-- README.md
++-- kubernetes/
+    +-- deployment.yaml
+    +-- hpa.yaml
+    +-- namespace.yaml
+    +-- service.yaml
 ```
+
+The `kubernetes/` directory is kept in the repository for future Kubernetes/EKS learning. It is **not used by the current CI/CD deployment pipeline**.
 
 ## Application
 
@@ -72,28 +87,30 @@ The Jenkins pipeline expects a Jenkins SonarQube installation named:
 sonarqube
 ```
 
-The Jenkins server must also have the SonarScanner CLI available as `sonar-scanner`.
+The Jenkins server must also have the SonarScanner CLI configured as the Jenkins tool named:
+
+```text
+SonarScanner
+```
 
 The SonarQube authentication token should be configured securely in Jenkins/SonarQube rather than committed to GitHub.
 
-## SonarQube Learning Objectives
+## Jenkins Credentials Required
 
-1. Install and configure SonarQube
-2. Create a SonarQube project
-3. Generate a SonarQube authentication token
-4. Configure SonarQube in Jenkins
-5. Install/configure SonarScanner
-6. Run SonarQube analysis from Jenkins
-7. Understand Bugs
-8. Understand Vulnerabilities
-9. Understand Code Smells
-10. Understand Security Hotspots
-11. Understand Duplications
-12. Understand Code Coverage
-13. Understand Reliability, Security, and Maintainability ratings
-14. Configure a Quality Gate
-15. Make Jenkins validate the Quality Gate
-16. Fix issues and run the analysis again
+Create these credentials in Jenkins:
+
+```text
+sonar-token       -> Secret text
+                   -> SonarQube authentication token
+
+ dockerhub-cred   -> Username with password
+                   -> Docker Hub username + access token/password
+
+app-ec2-ssh       -> SSH Username with private key
+                   -> Ubuntu SSH key for the application EC2 server
+```
+
+The `app-ec2-ssh` credential is used by the Jenkins pipeline to connect securely to the application EC2 server.
 
 ## Jenkins Pipeline Stages
 
@@ -112,10 +129,10 @@ The SonarQube authentication token should be configured securely in Jenkins/Sona
         |
 6. Push Docker Image
         |
-7. Deploy Container
+7. Deploy to Application EC2
 ```
 
-If the SonarQube Quality Gate fails, the Jenkins pipeline stops before Docker build/push/deployment.
+If the SonarQube Quality Gate fails, the Jenkins pipeline stops before Docker build, push, and deployment.
 
 ## Docker
 
@@ -127,15 +144,57 @@ COPY . /usr/share/nginx/html
 EXPOSE 80
 ```
 
-The Java source is included in the repository for SonarQube analysis; the Docker image continues to package the web application with Nginx.
+The Java source is included in the repository for SonarQube analysis; the Docker image packages the web application with Nginx.
 
-## Deployment
+## EC2 Deployment
 
-The Docker container is deployed on an AWS EC2 instance and exposed on port `8081`.
+The Jenkins pipeline pushes a versioned Docker image to Docker Hub using the Jenkins build number as the image tag.
+
+Example:
+
+```text
+jack1503/jack-devops-app:15
+```
+
+The application EC2 server then pulls that image and runs it as:
+
+```text
+jenkins-cicd-app
+```
+
+The container exposes port `80` internally and is published on EC2 port `8081`.
 
 ```text
 http://<EC2-PUBLIC-IP>:8081
 ```
+
+## Jenkins Deployment Parameter
+
+The Jenkinsfile contains an `APP_SERVER` parameter.
+
+Example:
+
+```text
+ubuntu@<APP-EC2-PUBLIC-IP>
+```
+
+Replace the default placeholder with the actual application EC2 SSH target when running the Jenkins job.
+
+## Monitoring
+
+Monitoring is separate from the CI/CD deployment stages.
+
+```text
+Application EC2
+      |
+      v
+Prometheus
+      |
+      v
+Grafana Dashboards
+```
+
+Prometheus collects metrics and Grafana visualizes them in dashboards. Monitoring does not replace the Jenkins deployment pipeline.
 
 ## Current Project Flow
 
@@ -147,12 +206,21 @@ GitHub
    -> Quality Gate
    -> Docker Build
    -> Docker Hub
-   -> EC2
+   -> Application EC2
    -> Docker Container
    -> Nginx
    -> Browser
+
+Monitoring:
+Application EC2
+   -> Prometheus
+   -> Grafana
 ```
+
+## Kubernetes / EKS
+
+Kubernetes and Amazon EKS are intentionally kept for a later learning stage. The current pipeline does **not** call `aws eks`, `kubectl`, or deploy to Kubernetes.
 
 ## Project Outcome
 
-The final objective is an automated pipeline where a GitHub push triggers Jenkins, SonarQube analyzes the source code, the Quality Gate decides whether the pipeline may continue, and only approved builds are packaged and deployed using Docker on AWS EC2.
+The final objective is an automated DevOps workflow where a GitHub push triggers Jenkins, SonarQube validates code quality, Docker packages the application, Docker Hub stores the image, and the approved image is automatically deployed to an AWS EC2 application server. Prometheus and Grafana provide monitoring and visualization for the running environment.
