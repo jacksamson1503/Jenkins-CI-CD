@@ -1,14 +1,6 @@
 pipeline {
     agent any
 
-    parameters {
-        string(
-            name: 'APP_SERVER',
-            defaultValue: 'ubuntu@3.80.166.135',
-            description: 'SSH target for the application EC2 server (for example: ubuntu@1.2.3.4)'
-        )
-    }
-
     environment {
         DOCKER_IMAGE = 'jack1503/jack-devops-app'
     }
@@ -17,6 +9,12 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Build and Test with Maven') {
+            steps {
+                sh 'mvn clean test package'
             }
         }
 
@@ -47,7 +45,13 @@ pipeline {
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_IMAGE:$BUILD_NUMBER'
+            }
+        }
+
+        stage('Login to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-cred',
@@ -59,31 +63,27 @@ pipeline {
             }
         }
 
-        stage('Push Image') {
+        stage('Push Image to Docker Hub') {
             steps {
                 sh 'docker push $DOCKER_IMAGE:$BUILD_NUMBER'
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Run Container') {
             steps {
-                sshagent(credentials: ['app-ec2-ssh']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${params.APP_SERVER} '
-                            docker pull ${DOCKER_IMAGE}:${BUILD_NUMBER} &&
-                            (docker stop jenkins-cicd-app || true) &&
-                            (docker rm jenkins-cicd-app || true) &&
-                            docker run -d --name jenkins-cicd-app -p 8081:80 ${DOCKER_IMAGE}:${BUILD_NUMBER}
-                        '
-                    """
-                }
+                sh '''
+                    docker pull $DOCKER_IMAGE:$BUILD_NUMBER
+                    docker stop jenkins-cicd-app || true
+                    docker rm jenkins-cicd-app || true
+                    docker run -d --name jenkins-cicd-app -p 8081:80 $DOCKER_IMAGE:$BUILD_NUMBER
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'CI/CD pipeline completed successfully. Application deployed to EC2.'
+            echo 'CI/CD pipeline completed successfully. Application is running on this EC2.'
         }
         failure {
             echo 'Pipeline failed. Check the failed stage in the Jenkins console output.'
