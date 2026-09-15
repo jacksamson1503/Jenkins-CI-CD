@@ -14,16 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
-
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml -DskipTests
-
       - name: Build Docker image
         run: docker build -t jack1503/jenkins-ci-cd:latest .
 
