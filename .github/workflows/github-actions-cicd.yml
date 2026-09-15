@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+
+  build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -26,16 +28,79 @@ jobs:
       - name: Push Docker image
         run: docker push jack1503/jenkins-ci-cd:latest
 
+  test:
+    name: Test Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull Docker image
+        run: docker pull jack1503/jenkins-ci-cd:latest
+
+      - name: Run test container
+        run: |
+          docker run -d \
+            --name test-container \
+            -p 8080:80 \
+            jack1503/jenkins-ci-cd:latest
+
+      - name: Check container status
+        run: docker ps
+
+      - name: Check application response
+        run: |
+          sleep 10
+          curl -f http://localhost:8080
+
+      - name: Stop test container
+        if: always()
+        run: docker rm -f test-container
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+
           script: |
             set -e
+
+            echo "Pulling latest Docker image..."
             docker pull jack1503/jenkins-ci-cd:latest
+
+            echo "Stopping old container..."
             docker stop jenkins-ci-cd || true
+
+            echo "Removing old container..."
             docker rm jenkins-ci-cd || true
-            docker run -d --name jenkins-ci-cd --restart unless-stopped -p 80:80 jack1503/jenkins-ci-cd:latest
+
+            echo "Starting new container..."
+            docker run -d \
+              --name jenkins-ci-cd \
+              --restart unless-stopped \
+              -p 80:80 \
+              jack1503/jenkins-ci-cd:latest
+
+            echo "Checking running container..."
+            docker ps
+
+            echo "Removing unused images..."
             docker image prune -f
+
+            echo "Deployment completed successfully!"
